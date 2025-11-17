@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - E-commerce</title>
+    <link rel="icon" href="img/logo.ico" />
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+
+<body>
+    <section id="header">
+        <a href="index.html"><img src="everylogo.png" width="200px" class="logo"></a>
+
+        <div>
+            <ul id="navbar">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li id="lg-bag"><a href="cart.html"><i class="fa-solid fa-bag-shopping"></i></a></li>
+                <li><a href="dashboard.html" id="profile-btn"><i class="fa-solid fa-user"></i> Profile</a></li>
+                <a href="#" id="close"><i class="fa-solid fa-xmark"></i></a>
+            </ul>
+        </div>
+        <div id="mobile">
+            <a href="cart.html" class="cart"><i class="fa-solid fa-bag-shopping"></i></a>
+            <i id="bar" class="fa-solid fa-bars"></i>
+        </div>
+    </section>
+
+    <section id="dashboard" class="section-p1">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="dashboard-sidebar" style="
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+">
+                        <h4 style="font-size: xx-large;">Dashboard</h4>
+                        <ul class="nav flex flex-row" style="display: flex;flex-direction: row;list-style: none;">
+                            <li class="nav-item" style="padding: 5px;">
+                                <a class="nav-link active" href="#overview" onclick="showSection('overview')">
+                                    <i class="fa-solid fa-tachometer-alt"></i> Overview
+                                </a>
+                            </li>
+                            <li class="nav-item" style="padding: 5px;">
+                                <a class="nav-link" href="#cart" onclick="showSection('cart')">
+                                    <i class="fa-solid fa-shopping-cart"></i> Cart Items
+                                </a>
+                            </li>
+                            <li class="nav-item" style="padding: 5px;">
+                                <a class="nav-link" href="#wishlist" onclick="showSection('wishlist')">
+                                    <i class="fa-solid fa-heart"></i> Wishlist
+                                </a>
+                            </li>
+                            <li class="nav-item" style="padding: 5px;">
+                                <a class="nav-link" href="#reviews" onclick="showSection('reviews')">
+                                    <i class="fa-solid fa-star"></i> Reviews
+                                </a>
+                            </li>
+                            <li class="nav-item" style="padding: 5px;">
+                                <a class="nav-link" href="#orders" onclick="showSection('orders')">
+                                    <i class="fa-solid fa-shopping-bag"></i> My Orders
+                                </a>
+                            </li>
+                            <li class="nav-item" style="padding: 5px;">
+                                <a class="nav-link" href="#account" onclick="showSection('account')">
+                                    <i class="fa-solid fa-user-cog"></i> Account Settings
+                                </a>
+                            </li>
+                            <li class="nav-item" style="padding: 5px;">
+                                <a class="nav-link" href="#" onclick="signOut()">
+                                    <i class="fa-solid fa-sign-out-alt"></i> Sign Out
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div id="overview-section" class="dashboard-content">
+                        <h2>Welcome back, <span id="user-name"></span>!</h2>
+                        <div class="mt-5">
+                            <h4 style="color: #333; font-weight: 600; margin-bottom: 20px;">Recent Activity</h4>
+                            <div id="recent-activity"
+                                style="background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                                <p style="color: #666; font-style: italic;">No recent activity.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="orders-section" class="dashboard-content" style="display: none;">
+                        <h2
+                            style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                            My Orders</h2>
+                        <div id="orders-list"
+                            style="background: rgba(255, 255, 255, 0.8); padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); text-align: center;">
+                            <i class="fa-solid fa-shopping-bag"
+                                style="font-size: 64px; color: #667eea; margin-bottom: 20px;"></i>
+                            <p style="color: #666; font-size: 18px; font-weight: 500;">No orders yet. Start shopping!
+                            </p>
+                            <a href="shop.html"
+                                style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: transform 0.3s ease;"
+                                onmouseover="this.style.transform='scale(1.05)'"
+                                onmouseout="this.style.transform='scale(1)'">Browse Products</a>
+                        </div>
+                    </div>
+
+                    <div id="cart-section" class="dashboard-content" style="display: none;">
+                        <h2
+                            style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                            Cart Items</h2>
+                        <div id="cart-list"
+                            style="background: rgba(255, 255, 255, 0.8); padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);">
+                            <i class="fa-solid fa-shopping-cart" style="font-size: 64px; color: #667eea; margin-bottom: 20px;"></i>
+                            <p style="color: #666; font-size: 18px; font-weight: 500;">Your cart is empty.</p>
+                            <a href="shop.html" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Start Shopping</a>
+                        </div>
+                    </div>
+
+                    <div id="wishlist-section" class="dashboard-content" style="display: none;">
+                        <h2
+                            style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                            Wishlist</h2>
+                        <div id="wishlist-list"
+                            style="background: rgba(255, 255, 255, 0.8); padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); text-align: center;">
+                            <i class="fa-solid fa-heart" style="font-size: 64px; color: #667eea; margin-bottom: 20px;"></i>
+                            <p style="color: #666; font-size: 18px; font-weight: 500;">Your wishlist is empty.</p>
+                            <a href="shop.html" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Browse Products</a>
+                        </div>
+                    </div>
+
+                    <div id="reviews-section" class="dashboard-content" style="display: none;">
+                        <h2
+                            style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                            Reviews</h2>
+                        <div id="reviews-list"
+                            style="background: rgba(255, 255, 255, 0.8); padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); text-align: center;">
+                            <i class="fa-solid fa-star" style="font-size: 64px; color: #667eea; margin-bottom: 20px;"></i>
+                            <p style="color: #666; font-size: 18px; font-weight: 500;">No reviews yet.</p>
+                            <a href="shop.html" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Shop & Review</a>
+                        </div>
+                    </div>
+
+                    <div id="account-section" class="dashboard-content" style="display: none;">
+                        <h2
+                            style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                            Account Settings</h2>
+                        <form id="account-form"
+                            style="background: rgba(255, 255, 255, 0.8); padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);">
+                            <div class="mb-4">
+                                <label for="account-username" class="form-label"
+                                    style="color: #333; font-weight: 600; font-size: 16px;">Username</label>
+                                <input type="text" class="form-control" id="account-username"
+                                    style="border: 2px solid #e1e5e9; border-radius: 10px; padding: 12px; transition: border-color 0.3s ease;"
+                                    onfocus="this.style.borderColor='#667eea'"
+                                    onblur="this.style.borderColor='#e1e5e9'">
+                            </div>
+                            <div class="mb-4">
+                                <label for="account-email" class="form-label"
+                                    style="color: #333; font-weight: 600; font-size: 16px;">Email</label>
+                                <input type="email" class="form-control" id="account-email" readonly
+                                    style="border: 2px solid #e1e5e9; border-radius: 10px; padding: 12px; background: #f8f9fa;">
+                            </div>
+                            <div class="mb-4">
+                                <label for="account-password" class="form-label"
+                                    style="color: #333; font-weight: 600; font-size: 16px;">Change Password</label>
+                                <input type="password" class="form-control" id="account-password"
+                                    placeholder="Enter new password"
+                                    style="border: 2px solid #e1e5e9; border-radius: 10px; padding: 12px; transition: border-color 0.3s ease;"
+                                    onfocus="this.style.borderColor='#667eea'"
+                                    onblur="this.style.borderColor='#e1e5e9'">
+                            </div>
+                            <button type="submit" class="btn"
+                                style="background: linear-gradient(135deg, #667eea, #764ba2); border: none; padding: 12px 30px; border-radius: 25px; color: white; font-weight: 600; font-size: 16px; transition: all 0.3s ease; width: 100%;"
+                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.3)'"
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Update
+                                Account</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <i class="fa-solid fa-check-circle"></i>
+        <span>Action completed!</span>
+    </div>
+
+    <footer class="section-p1">
+        <div class="col">
+            <img class="logo" src="everylogo.png" width="200px">
+            <h4>Contact</h4>
+            <p><strong>Address: </strong>Plot No. 2, Sector 17A, Yamuna Expressway, Opposite Buddha International
+                Circuit, Greater Noida, Uttar Pradesh 203201</p>
+            <p><strong>Phone: </strong>+1 956 1235 378</p>
+            <p><strong>Hours: </strong> 10:00 - 18:00 Mon - Sat</p>
+            <div class="follow">
+                <h4>Follow us</h4>
+                <div class="icon">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-linux"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <h4>About</h4>
+            <a href="#">Privacy Policy</a>
+            <a href="terms.html">Terms & Condition</a>
+            <a href="#">Contact Us</a>
+        </div>
+
+        <div class="col install">
+            <h4>Install App</h4>
+            <p>From App Store or Google Play</p>
+            <div class="row">
+                <img src="img/pay/app.jpg">
+                <img src="img/pay/play.jpg">
+            </div>
+            <p>Secured Payment Gateways</p>
+            <img src="img/pay/pay.png">
+        </div>
+
+        <div class="copyright">
+            <p>&copy; 2024, Your E-commerce Store</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+    <script>
+        // Dashboard specific JavaScript
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            try {
+                // Fetch user data from backend
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'signin.html';
+                    return;
+                }
+
+                const user = data.user;
+
+                // Populate user data
+                document.getElementById('user-name').textContent = user.name;
+                document.getElementById('account-username').value = user.name;
+                document.getElementById('account-email').value = user.email;
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                localStorage.removeItem('token');
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            // Update cart count and recent activity
+            try {
+                const cartResponse = await fetch(`${API_URL}/cart`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const cartData = await cartResponse.json();
+                if (cartData.success) {
+                    const items = cartData.cart.items || [];
+                    if (items.length > 0) {
+                        const activityHtml = items.map(item => `
+                            <div class="activity-item">
+                                <img src="${item.product.image}" alt="${item.product.name}" style="width: 50px; height: 50px; object-fit: cover;">
+                                <div>
+                                    <strong>${item.product.name}</strong>
+                                    <p>Quantity: ${item.quantity}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                        document.getElementById('recent-activity').innerHTML = activityHtml;
+
+                        // Populate cart section
+                        const cartListHtml = items.map(item => `
+                            <div class="cart-item" style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee;">
+                                <img src="${item.product.image}" alt="${item.product.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 20px;">
+                                <div style="flex: 1;">
+                                    <h5 style="margin: 0; color: #333;">${item.product.name}</h5>
+                                    <p style="margin: 5px 0; color: #666;">Quantity: ${item.quantity}</p>
+                                    <p style="margin: 0; color: #088178; font-weight: 600;">Rs. ${item.product.price * item.quantity}</p>
+                                </div>
+                                <a href="cart.html" style="color: #667eea; text-decoration: none; font-weight: 600;">View Cart</a>
+                            </div>
+                        `).join('');
+                        document.getElementById('cart-list').innerHTML = cartListHtml;
+                    } else {
+                        document.getElementById('cart-list').innerHTML = `
+                            <i class="fa-solid fa-shopping-cart" style="font-size: 64px; color: #667eea; margin-bottom: 20px;"></i>
+                            <p style="color: #666; font-size: 18px; font-weight: 500;">Your cart is empty.</p>
+                            <a href="shop.html" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Start Shopping</a>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching cart:', error);
+            }
+
+            // Handle account form submission
+            document.getElementById('account-form').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const name = document.getElementById('account-username').value;
+                const password = document.getElementById('account-password').value;
+
+                if (password) {
+                    showNotification('Password change not implemented yet');
+                    return;
+                }
+
+                if (name !== user.name) {
+                    try {
+                        const response = await fetch(`${API_URL}/auth/update`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ name })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            showNotification('Account updated successfully!');
+                            document.getElementById('user-name').textContent = name;
+                            user.name = name; // Update local user object
+                        } else {
+                            showNotification('Failed to update account');
+                        }
+                    } catch (error) {
+                        console.error('Error updating account:', error);
+                        showNotification('Error updating account');
+                    }
+                } else {
+                    showNotification('No changes to update');
+                }
+            });
+        });
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.dashboard-content').forEach(section => {
+                section.style.display = 'none';
+            });
+            // Show selected section
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+
+</html>
