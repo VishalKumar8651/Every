@@ -1,4 +1,30 @@
-const API_URL = 'mongodb+srv://every_db:every-pass@cluster0.mw7fggq.mongodb.net';
+const LOCAL_API = 'http://localhost:5000/api';
+const LIVE_API = 'https://every-2.onrender.com/api';
+let API_URL = LOCAL_API;
+let backendAvailable = null;
+
+async function getAvailableAPI() {
+    if (backendAvailable !== null) {
+        return backendAvailable ? LOCAL_API : LIVE_API;
+    }
+    
+    try {
+        const response = await fetch('http://localhost:5000/health', { 
+            method: 'GET',
+            timeout: 3000 
+        });
+        backendAvailable = response.ok;
+        return backendAvailable ? LOCAL_API : LIVE_API;
+    } catch (error) {
+        backendAvailable = false;
+        return LIVE_API;
+    }
+}
+
+async function apiCall(endpoint, options = {}) {
+    API_URL = await getAvailableAPI();
+    return fetch(`${API_URL}${endpoint}`, options);
+}
 const bar = document.getElementById('bar');
 const close = document.getElementById('close');
 const nav = document.getElementById('navbar');
@@ -52,14 +78,14 @@ async function addToCart(button) {
     const priceText = productDiv.querySelector('h4').textContent;
     
     try {
-        const response = await fetch(`${API_URL}/products?search=${encodeURIComponent(productName)}`);
+        const response = await apiCall(`/products?search=${encodeURIComponent(productName)}`);
         const data = await response.json();
         
         if (data.success && data.products.length > 0) {
             const product = data.products[0];
             const token = getToken();
             
-            const cartResponse = await fetch(`${API_URL}/cart/add`, {
+            const cartResponse = await apiCall(`/cart/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -106,7 +132,7 @@ async function loadCartItems() {
 
     const token = getToken();
     try {
-        const response = await fetch(`${API_URL}/cart`, {
+        const response = await apiCall(`/cart`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
@@ -167,7 +193,7 @@ async function updateCartItem(e) {
     if (newQuantity < 1) return;
 
     try {
-        const response = await fetch(`${API_URL}/cart/update/${productId}`, {
+        const response = await apiCall(`/cart/update/${productId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -194,7 +220,7 @@ async function removeCartItem(e) {
     const token = getToken();
 
     try {
-        const response = await fetch(`${API_URL}/cart/remove/${productId}`, {
+        const response = await apiCall(`/cart/remove/${productId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -451,14 +477,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const quantity = parseInt(document.getElementById('modal-quantity').value) || 1;
 
             try {
-                const response = await fetch(`${API_URL}/products?search=${encodeURIComponent(title)}`);
+                const response = await apiCall(`/products?search=${encodeURIComponent(title)}`);
                 const data = await response.json();
                 
                 if (data.success && data.products.length > 0) {
                     const product = data.products[0];
                     const token = getToken();
                     
-                    const cartResponse = await fetch(`${API_URL}/cart/add`, {
+                    const cartResponse = await apiCall(`/cart/add`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -677,7 +703,7 @@ async function handleSignup() {
     if (hasError) return;
 
     try {
-        const response = await fetch(`${API_URL}/auth/register`, {
+        const response = await apiCall(`/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, password })
@@ -722,7 +748,7 @@ async function handleSignin() {
     if (hasError) return;
 
     try {
-        const response = await fetch(`${API_URL}/auth/login`, {
+        const response = await apiCall(`/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
