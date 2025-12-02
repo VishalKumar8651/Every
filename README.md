@@ -35,6 +35,25 @@ An e-commerce platform that enables:
 
 ## 🏗️ Backend Architecture
 
+
+E-commerce-main/src/main/java/com/ecommerce/
+├── Main.java                          # Main entry point, initializes DAOs and sample data
+├── CreditCardPayment.java             # Implements PaymentProcessor for credit card payments
+├── DatabaseConnection.java            # Utility class for MySQL database connection
+├── PaymentProcessor.java              # Interface for payment processing (polymorphism)
+├── dao/
+│   ├── OrderDAO.java                  # Data Access Object for orders (CRUD operations)
+│   ├── ProductDAO.java                # Data Access Object for products (CRUD operations)
+│   └── UserDAO.java                   # Data Access Object for users (CRUD operations)
+├── model/
+│   ├── ElectronicProduct.java         # Model for electronic products (extends Product)
+│   ├── Order.java                     # Model for orders with products list
+│   ├── Product.java                   # Base model for products
+│   └── User.java                      # Model for users
+└── service/
+    └── OrderService.java              # Service for order placement, payment, and stock updates (multithreading)
+    
+
 ### **Technology Stack**
 
 - **Runtime**: Node.js
