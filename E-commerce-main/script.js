@@ -7,11 +7,11 @@ async function getAvailableAPI() {
     if (backendAvailable !== null) {
         return backendAvailable ? LOCAL_API : LIVE_API;
     }
-    
+
     try {
-        const response = await fetch('http://localhost:5000/health', { 
+        const response = await fetch('http://localhost:5000/health', {
             method: 'GET',
-            timeout: 3000 
+            timeout: 3000
         });
         backendAvailable = response.ok;
         return backendAvailable ? LOCAL_API : LIVE_API;
@@ -76,15 +76,15 @@ async function addToCart(button) {
     const productDiv = button.closest('.pro');
     const productName = productDiv.querySelector('h5').textContent;
     const priceText = productDiv.querySelector('h4').textContent;
-    
+
     try {
         const response = await apiCall(`/products?search=${encodeURIComponent(productName)}`);
         const data = await response.json();
-        
+
         if (data.success && data.products.length > 0) {
             const product = data.products[0];
             const token = getToken();
-            
+
             const cartResponse = await apiCall(`/cart/add`, {
                 method: 'POST',
                 headers: {
@@ -96,7 +96,7 @@ async function addToCart(button) {
                     quantity: 1
                 })
             });
-            
+
             const cartData = await cartResponse.json();
             if (cartData.success) {
                 showNotification('Product added to cart!');
@@ -136,7 +136,7 @@ async function loadCartItems() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
-        
+
         if (!data.success) {
             showNotification('Error loading cart', 'error');
             return;
@@ -144,7 +144,7 @@ async function loadCartItems() {
 
         const tbody = document.querySelector('#cart table tbody');
         tbody.innerHTML = '';
-        
+
         const cartData = data.cart;
         const items = cartData.items || [];
 
@@ -255,6 +255,33 @@ function clearCart() {
     localStorage.removeItem('cart');
     // Reload the page to reflect changes
     location.reload();
+}
+
+function proceedToOrder() {
+    if (!isLoggedIn()) {
+        showNotification('Please login first to place an order', 'error');
+        setTimeout(() => {
+            window.location.href = 'signin.html';
+        }, 2000);
+        return;
+    }
+
+    // Check if cart has items
+    const token = getToken();
+    apiCall(`/cart`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).then(response => response.json())
+        .then(data => {
+            if (data.success && data.cart.items.length > 0) {
+                window.location.href = 'order.html';
+            } else {
+                showNotification('Your cart is empty', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error checking cart', 'error');
+        });
 }
 
 // Product Modal Functionality
@@ -479,11 +506,11 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 const response = await apiCall(`/products?search=${encodeURIComponent(title)}`);
                 const data = await response.json();
-                
+
                 if (data.success && data.products.length > 0) {
                     const product = data.products[0];
                     const token = getToken();
-                    
+
                     const cartResponse = await apiCall(`/cart/add`, {
                         method: 'POST',
                         headers: {
@@ -495,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             quantity: quantity
                         })
                     });
-                    
+
                     const cartData = await cartResponse.json();
                     if (cartData.success) {
                         showNotification('Product added to cart!');
@@ -773,6 +800,54 @@ async function handleSignin() {
     }
 }
 
+async function handleCredentialResponse(response) {
+    // decodeJwtResponse() is a custom function defined by you
+    // to decode the credential response.
+    const responsePayload = decodeJwtResponse(response.credential);
+
+    console.log("ID: " + responsePayload.sub);
+    console.log('Full Name: ' + responsePayload.name);
+    console.log('Given Name: ' + responsePayload.given_name);
+    console.log('Family Name: ' + responsePayload.family_name);
+    console.log("Image URL: " + responsePayload.picture);
+    console.log("Email: " + responsePayload.email);
+
+    try {
+        const apiResponse = await apiCall('/auth/google', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(responsePayload)
+        });
+
+        const data = await apiResponse.json();
+
+        if (data.success) {
+            localStorage.setItem('token', data.token);
+            showNotification('Signed in with Google successfully!');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        } else {
+            showNotification(data.message || 'Google Sign-In failed', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('An error occurred during Google Sign-In', 'error');
+    }
+}
+
+function decodeJwtResponse(token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
 function updateAuthUI() {
     const token = getToken();
     const signinBtn = document.getElementById('signin-btn');
@@ -782,7 +857,7 @@ function updateAuthUI() {
         if (signinBtn) signinBtn.style.display = 'none';
         if (profileBtn) {
             profileBtn.style.display = 'block';
-            profileBtn.addEventListener('click', function(e) {
+            profileBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 window.location.href = 'dashboard.html';
             });
@@ -944,6 +1019,160 @@ function signOut() {
         localStorage.removeItem('token');
         updateAuthUI();
         window.location.href = 'index.html';
+    }
+}
+
+// Order Page Functionality
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('order')) {
+        loadOrderSummary();
+        setupOrderForm();
+        setupPaymentMethodToggle();
+    }
+});
+
+async function loadOrderSummary() {
+    if (!isLoggedIn()) {
+        window.location.href = 'signin.html';
+        return;
+    }
+
+    const token = getToken();
+    try {
+        const response = await apiCall(`/cart`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (!data.success || data.cart.items.length === 0) {
+            showNotification('Your cart is empty', 'error');
+            setTimeout(() => {
+                window.location.href = 'cart.html';
+            }, 2000);
+            return;
+        }
+
+        const orderItemsContainer = document.getElementById('order-items');
+        orderItemsContainer.innerHTML = '';
+
+        data.cart.items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'order-item';
+            itemDiv.innerHTML = `
+                <div class="item-info">
+                    <img src="${item.product.image}" alt="${item.product.name}" style="width: 60px; height: 60px; object-fit: cover; margin-right: 15px;">
+                    <div>
+                        <h4 style="margin: 0; font-size: 16px;">${item.product.name}</h4>
+                        <p style="margin: 5px 0; color: #666;">Quantity: ${item.quantity}</p>
+                    </div>
+                </div>
+                <div>
+                    <p style="margin: 0; font-weight: bold;">Rs. ${item.product.price * item.quantity}</p>
+                </div>
+            `;
+            orderItemsContainer.appendChild(itemDiv);
+        });
+
+        document.getElementById('order-total').textContent = data.cart.totalPrice;
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error loading order summary', 'error');
+    }
+}
+
+function setupOrderForm() {
+    const orderForm = document.getElementById('order-form');
+    if (orderForm) {
+        orderForm.addEventListener('submit', handleOrderSubmit);
+    }
+}
+
+function setupPaymentMethodToggle() {
+    const paymentMethods = document.querySelectorAll('input[name="payment-method"]');
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function () {
+            const cardDetails = document.getElementById('card-details');
+            if (this.value === 'card') {
+                cardDetails.style.display = 'block';
+            } else {
+                cardDetails.style.display = 'none';
+            }
+        });
+    });
+}
+
+async function handleOrderSubmit(e) {
+    e.preventDefault();
+
+    if (!isLoggedIn()) {
+        showNotification('Please login first', 'error');
+        return;
+    }
+
+    // Collect form data
+    const shippingAddress = {
+        fullName: document.getElementById('full-name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        state: document.getElementById('state').value.trim(),
+        pinCode: document.getElementById('pin-code').value.trim(),
+        country: document.getElementById('country').value.trim()
+    };
+
+    // Validate required fields
+    const requiredFields = ['fullName', 'phone', 'address', 'city', 'state', 'pinCode', 'country'];
+    let hasError = false;
+
+    requiredFields.forEach(field => {
+        if (!shippingAddress[field]) {
+            showNotification(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`, 'error');
+            hasError = true;
+        }
+    });
+
+    if (hasError) return;
+
+    const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+
+    // If card payment, validate card details
+    if (paymentMethod === 'card') {
+        const cardNumber = document.getElementById('card-number').value.trim();
+        const expiryMonth = document.getElementById('expiry-month').value.trim();
+        const cvv = document.getElementById('cvv').value.trim();
+
+        if (!cardNumber || !expiryMonth || !cvv) {
+            showNotification('Please fill in all card details', 'error');
+            return;
+        }
+    }
+
+    const token = getToken();
+
+    try {
+        const response = await apiCall(`/orders/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                shippingAddress: `${shippingAddress.fullName}, ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.pinCode}, ${shippingAddress.country}`,
+                paymentMethod: paymentMethod
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('Thank you! Order placed ❤️');
+            window.location.href = 'dashboard.html';
+        } else {
+            showNotification(data.message || 'Error placing order', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error placing order', 'error');
     }
 }
 

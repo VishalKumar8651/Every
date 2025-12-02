@@ -1,0 +1,5 @@
+- [x] Increase "Place Order" button size by 80% in order-styles.css (change padding to 27px, font-size to 32px)
+- [x] Change form to ask for full name instead of first and last name separate
+- [x] Remove ZIP Code field from order form
+- [x] Add PIN Code field to order form
+- [x] Remove email field from order form

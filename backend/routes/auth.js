@@ -101,6 +101,53 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// @desc    Login with Google
+// @route   POST /api/auth/google
+// @access  Public
+router.post('/google', async (req, res) => {
+  try {
+    const { name, email, picture, sub: googleId } = req.body;
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // User exists, update googleId if not present
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.picture = picture;
+        await user.save();
+      }
+    } else {
+      // Create new user
+      user = await User.create({
+        name,
+        email,
+        picture,
+        googleId
+      });
+    }
+
+    const token = getSignedJwt(user._id);
+
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture
+      }
+    });
+  } catch (error) {
+    console.error('Google Auth Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error during Google Sign-In'
+    });
+  }
+});
+
 router.get('/me', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
