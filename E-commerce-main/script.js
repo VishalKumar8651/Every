@@ -8,14 +8,28 @@ async function getAvailableAPI() {
         return backendAvailable ? LOCAL_API : LIVE_API;
     }
 
+    // If running from file system, assume local development
+    if (window.location.protocol === 'file:') {
+        console.log('Running from file system, defaulting to Local API');
+        backendAvailable = true;
+        return LOCAL_API;
+    }
+
     try {
         const response = await fetch('http://localhost:5000/health', {
-            method: 'GET',
-            timeout: 3000
+            method: 'GET'
         });
         backendAvailable = response.ok;
+        console.log('Backend health check:', backendAvailable ? 'Online' : 'Offline');
         return backendAvailable ? LOCAL_API : LIVE_API;
     } catch (error) {
+        console.warn('Backend health check failed:', error);
+        // If we are on localhost, we probably want local API even if check fails (e.g. CORS)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log('On localhost, defaulting to Local API despite error');
+            backendAvailable = true;
+            return LOCAL_API;
+        }
         backendAvailable = false;
         return LIVE_API;
     }
@@ -99,6 +113,7 @@ async function addToCart(button) {
 
             const cartData = await cartResponse.json();
             if (cartData.success) {
+                store.dispatch(setCartAction(cartData.cart));
                 showNotification('Product added to cart!');
             } else {
                 showNotification('Error adding to cart', 'error');
@@ -142,36 +157,9 @@ async function loadCartItems() {
             return;
         }
 
-        const tbody = document.querySelector('#cart table tbody');
-        tbody.innerHTML = '';
+        // Dispatch action to update store
+        store.dispatch(setCartAction(data.cart));
 
-        const cartData = data.cart;
-        const items = cartData.items || [];
-
-        items.forEach(item => {
-            const row = document.createElement('tr');
-            const rowSubtotal = item.product.price * item.quantity;
-
-            row.innerHTML = `
-                <td><a href="#" class="remove-item" data-product-id="${item.product._id}"><i class="fa-regular fa-circle-xmark"></i></a></td>
-                <td><img src="${item.product.image}"></td>
-                <td>${item.product.name}</td>
-                <td>Rs. ${item.product.price}</td>
-                <td><input type="number" value="${item.quantity}" min="1" class="quantity-input" data-product-id="${item.product._id}"></td>
-                <td>Rs. ${rowSubtotal}</td>
-            `;
-            tbody.appendChild(row);
-        });
-
-        updateCartTotal(cartData.totalPrice);
-
-        document.querySelectorAll('.quantity-input').forEach(input => {
-            input.addEventListener('change', updateCartItem);
-        });
-
-        document.querySelectorAll('.remove-item').forEach(btn => {
-            btn.addEventListener('click', removeCartItem);
-        });
     } catch (error) {
         console.error('Error:', error);
         showNotification('Error loading cart', 'error');
@@ -204,7 +192,7 @@ async function updateCartItem(e) {
 
         const data = await response.json();
         if (data.success) {
-            loadCartItems();
+            store.dispatch(setCartAction(data.cart));
         } else {
             showNotification('Error updating cart', 'error');
         }
@@ -227,7 +215,7 @@ async function removeCartItem(e) {
 
         const data = await response.json();
         if (data.success) {
-            loadCartItems();
+            store.dispatch(setCartAction(data.cart));
             showRemoveNotification();
         } else {
             showNotification('Error removing item', 'error');
@@ -525,6 +513,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     const cartData = await cartResponse.json();
                     if (cartData.success) {
+                        store.dispatch(setCartAction(cartData.cart));
                         showNotification('Product added to cart!');
                         closeProductModal();
                     } else {
@@ -561,7 +550,7 @@ function loadMoreProducts(section) {
     const additionalProducts = getAdditionalProducts(section);
     const targetSection = section === 'featured' ?
         document.querySelector('#product1 .pro-container') :
-        document.querySelector('#product1.section-p1 .pro-container');
+        document.querySelector('#product2 .pro-container');
 
     if (targetSection) {
         additionalProducts.forEach(product => {
@@ -584,6 +573,13 @@ function loadMoreProducts(section) {
 
         // Re-attach modal event listeners to new products
         attachModalListeners();
+
+        // Hide the button after loading
+        const btnId = section === 'featured' ? 'load-more-featured' : 'load-more-arrivals';
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.style.display = 'none';
+        }
     }
 }
 
@@ -799,6 +795,49 @@ async function handleSignin() {
         showError('signin-username-error', 'An error occurred during login');
     }
 }
+
+// Redux Subscription and Rendering
+function renderCart() {
+    const state = store.getState();
+    const cartData = state.cart;
+    const tbody = document.querySelector('#cart table tbody');
+
+    // Only render if we are on the cart page (tbody exists)
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const items = cartData.items || [];
+
+    items.forEach(item => {
+        const row = document.createElement('tr');
+        const rowSubtotal = item.product.price * item.quantity;
+
+        row.innerHTML = `
+            <td><a href="#" class="remove-item" data-product-id="${item.product._id}"><i class="fa-regular fa-circle-xmark"></i></a></td>
+            <td><img src="${item.product.image}"></td>
+            <td>${item.product.name}</td>
+            <td>Rs. ${item.product.price}</td>
+            <td><input type="number" value="${item.quantity}" min="1" class="quantity-input" data-product-id="${item.product._id}"></td>
+            <td>Rs. ${rowSubtotal}</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    updateCartTotal(cartData.totalPrice);
+
+    // Re-attach listeners
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('change', updateCartItem);
+    });
+
+    document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', removeCartItem);
+    });
+}
+
+// Subscribe to store updates
+store.subscribe(renderCart);
 
 async function handleCredentialResponse(response) {
     // decodeJwtResponse() is a custom function defined by you
@@ -1032,6 +1071,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 async function loadOrderSummary() {
+    console.log('Loading order summary...');
     if (!isLoggedIn()) {
         window.location.href = 'signin.html';
         return;
@@ -1043,8 +1083,9 @@ async function loadOrderSummary() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
+        console.log('Order Summary Data:', data);
 
-        if (!data.success || data.cart.items.length === 0) {
+        if (!data.success || !data.cart || data.cart.items.length === 0) {
             showNotification('Your cart is empty', 'error');
             setTimeout(() => {
                 window.location.href = 'cart.html';
@@ -1053,9 +1094,34 @@ async function loadOrderSummary() {
         }
 
         const orderItemsContainer = document.getElementById('order-items');
+        if (!orderItemsContainer) {
+            console.error('Order items container not found');
+            return;
+        }
         orderItemsContainer.innerHTML = '';
 
         data.cart.items.forEach(item => {
+            if (!item.product) {
+                console.warn('Product data missing for item:', item);
+                // Optionally show a placeholder or skip
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'order-item';
+                itemDiv.innerHTML = `
+                    <div class="item-info">
+                        <div style="width: 60px; height: 60px; background: #eee; margin-right: 15px; display: flex; align-items: center; justify-content: center;">?</div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 16px;">Product Unavailable</h4>
+                            <p style="margin: 5px 0; color: #666;">Quantity: ${item.quantity}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin: 0; font-weight: bold;">Rs. ${item.price * item.quantity}</p>
+                    </div>
+                `;
+                orderItemsContainer.appendChild(itemDiv);
+                return;
+            }
+
             const itemDiv = document.createElement('div');
             itemDiv.className = 'order-item';
             itemDiv.innerHTML = `
@@ -1073,9 +1139,12 @@ async function loadOrderSummary() {
             orderItemsContainer.appendChild(itemDiv);
         });
 
-        document.getElementById('order-total').textContent = data.cart.totalPrice;
+        const totalElement = document.getElementById('order-total');
+        if (totalElement) {
+            totalElement.textContent = data.cart.totalPrice;
+        }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error loading order summary:', error);
         showNotification('Error loading order summary', 'error');
     }
 }
@@ -1117,11 +1186,11 @@ async function handleOrderSubmit(e) {
         city: document.getElementById('city').value.trim(),
         state: document.getElementById('state').value.trim(),
         pinCode: document.getElementById('pin-code').value.trim(),
-        country: document.getElementById('country').value.trim()
+        landmark: document.getElementById('landmark').value.trim()
     };
 
     // Validate required fields
-    const requiredFields = ['fullName', 'phone', 'address', 'city', 'state', 'pinCode', 'country'];
+    const requiredFields = ['fullName', 'phone', 'address', 'city', 'state', 'pinCode'];
     let hasError = false;
 
     requiredFields.forEach(field => {
@@ -1149,6 +1218,13 @@ async function handleOrderSubmit(e) {
 
     const token = getToken();
 
+    // Construct address string with landmark if provided
+    let fullAddress = `${shippingAddress.fullName}, ${shippingAddress.address}`;
+    if (shippingAddress.landmark) {
+        fullAddress += `, Near ${shippingAddress.landmark}`;
+    }
+    fullAddress += `, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.pinCode}, India`;
+
     try {
         const response = await apiCall(`/orders/create`, {
             method: 'POST',
@@ -1157,7 +1233,7 @@ async function handleOrderSubmit(e) {
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                shippingAddress: `${shippingAddress.fullName}, ${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.pinCode}, ${shippingAddress.country}`,
+                shippingAddress: fullAddress,
                 paymentMethod: paymentMethod
             })
         });
@@ -1177,3 +1253,32 @@ async function handleOrderSubmit(e) {
 }
 
 // Contact Form Handling
+
+// Product Filtering
+document.addEventListener('DOMContentLoaded', function () {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const products = document.querySelectorAll('.pro');
+
+    if (filterButtons.length > 0) {
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                button.classList.add('active');
+
+                const filterValue = button.getAttribute('data-filter');
+
+                products.forEach(product => {
+                    const category = product.getAttribute('data-category');
+
+                    if (filterValue === 'all' || category === filterValue) {
+                        product.style.display = 'block';
+                    } else {
+                        product.style.display = 'none';
+                    }
+                });
+            });
+        });
+    }
+});

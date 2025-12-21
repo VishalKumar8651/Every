@@ -1,6 +1,7 @@
 const express = require('express');
 const Product = require('../models/Product');
 const { protect } = require('../middleware/auth');
+const redisClient = require('../config/redis');
 
 const router = express.Router();
 
@@ -20,6 +21,17 @@ router.get('/', async (req, res) => {
       ];
     }
 
+    const cacheKey = `products:${JSON.stringify(query)}:${limit}:${page}`;
+
+    try {
+      const cachedData = await redisClient.get(cacheKey);
+      if (cachedData) {
+        return res.status(200).json(JSON.parse(cachedData));
+      }
+    } catch (err) {
+      console.error('Redis Error:', err);
+    }
+
     const products = await Product.find(query)
       .limit(limit * 1)
       .skip((page - 1) * limit)
@@ -27,7 +39,7 @@ router.get('/', async (req, res) => {
 
     const total = await Product.countDocuments(query);
 
-    res.status(200).json({
+    const responseData = {
       success: true,
       products,
       pagination: {
@@ -35,7 +47,15 @@ router.get('/', async (req, res) => {
         pages: Math.ceil(total / limit),
         currentPage: page
       }
-    });
+    };
+
+    try {
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(responseData));
+    } catch (err) {
+      console.error('Redis Cache Error:', err);
+    }
+
+    res.status(200).json(responseData);
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -46,6 +66,17 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
+    const cacheKey = `product:${req.params.id}`;
+
+    try {
+      const cachedProduct = await redisClient.get(cacheKey);
+      if (cachedProduct) {
+        return res.status(200).json(JSON.parse(cachedProduct));
+      }
+    } catch (err) {
+      console.error('Redis Error:', err);
+    }
+
     const product = await Product.findById(req.params.id);
 
     if (!product) {
@@ -55,10 +86,18 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    const responseData = {
       success: true,
       product
-    });
+    };
+
+    try {
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(responseData));
+    } catch (err) {
+      console.error('Redis Cache Error:', err);
+    }
+
+    res.status(200).json(responseData);
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -87,6 +126,10 @@ router.post('/', protect, async (req, res) => {
       category,
       stock
     });
+
+    // Invalidate products list cache (simple approach: clear all products keys if possible, or just let them expire. 
+    // For now, we won't implement complex pattern matching deletion as it requires scanning. 
+    // Ideally, we should clear relevant list keys.)
 
     res.status(201).json({
       success: true,
@@ -117,6 +160,13 @@ router.put('/:id', protect, async (req, res) => {
       { new: true, runValidators: true }
     );
 
+    try {
+      // Invalidate specific product cache
+      await redisClient.del(`product:${req.params.id}`);
+    } catch (err) {
+      console.error('Redis Error:', err);
+    }
+
     res.status(200).json({
       success: true,
       product
@@ -144,6 +194,13 @@ router.delete('/:id', protect, async (req, res) => {
       success: true,
       message: 'Product deleted'
     });
+
+    try {
+      // Invalidate specific product cache
+      await redisClient.del(`product:${req.params.id}`);
+    } catch (err) {
+      console.error('Redis Error:', err);
+    }
   } catch (error) {
     res.status(500).json({
       success: false,

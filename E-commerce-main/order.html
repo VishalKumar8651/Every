@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="order-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
+
 <body>
     <section id="header">
         <a href="index.html"><img src="everylogo.png" width="200px" class="logo"></a>
@@ -22,8 +24,10 @@
                 <li><a href="contact.html">Contact</a></li>
                 <li id="lg-bag"><a href="cart.html"><i class="fa-solid fa-bag-shopping"></i></a></li>
                 <li><a href="signin.html" id="signin-btn">Sign In</a></li>
-                <li><a href="dashboard.html" id="profile-btn" style="display: none;"><i class="fa-solid fa-user"></i> Profile</a></li>
-                <a href="#" id="close"><i class="fa-solid fa-xmark"></i></a>
+                <li><a href="dashboard.html" id="profile-btn" style="display: none;"><i class="fa-solid fa-user"></i>
+                        Profile</a></li>
+
+                <a href='#' id='close'><i class='fa-solid fa-xmark'></i></a>
             </ul>
         </div>
         <div id="mobile">
@@ -43,29 +47,71 @@
                 <h3>Billing & Shipping Details</h3>
                 <form id="order-form">
                     <div class="form-group">
-                        <label for="full-name">Full Name *</label>
-                        <input type="text" id="full-name" required>
+                        <label for="full-name" class="form-label">Full Name *</label>
+                        <input type="text" id="full-name" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="phone">Phone *</label>
-                        <input type="tel" id="phone" required>
+                        <label for="phone" class="form-label">Phone *</label>
+                        <input type="tel" id="phone" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="address">Address *</label>
-                        <textarea id="address" required></textarea>
+                        <label for="state" class="form-label">State *</label>
+                        <select id="state" class="form-control" required>
+                            <option value="">Select State</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                            <option value="Assam">Assam</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Chhattisgarh">Chhattisgarh</option>
+                            <option value="Goa">Goa</option>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="Haryana">Haryana</option>
+                            <option value="Himachal Pradesh">Himachal Pradesh</option>
+                            <option value="Jharkhand">Jharkhand</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Kerala">Kerala</option>
+                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Manipur">Manipur</option>
+                            <option value="Meghalaya">Meghalaya</option>
+                            <option value="Mizoram">Mizoram</option>
+                            <option value="Nagaland">Nagaland</option>
+                            <option value="Odisha">Odisha</option>
+                            <option value="Punjab">Punjab</option>
+                            <option value="Rajasthan">Rajasthan</option>
+                            <option value="Sikkim">Sikkim</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Telangana">Telangana</option>
+                            <option value="Tripura">Tripura</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                            <option value="Uttarakhand">Uttarakhand</option>
+                            <option value="West Bengal">West Bengal</option>
+                            <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                            <option value="Chandigarh">Chandigarh</option>
+                            <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman
+                                and Diu</option>
+                            <option value="Lakshadweep">Lakshadweep</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Puducherry">Puducherry</option>
+                            <option value="Ladakh">Ladakh</option>
+                            <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label for="city">City *</label>
-                        <input type="text" id="city" required>
+                        <label for="city" class="form-label">City *</label>
+                        <input type="text" id="city" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="state">State *</label>
-                        <input type="text" id="state" required>
+                        <label for="pin-code" class="form-label">Pin Code *</label>
+                        <input type="text" id="pin-code" class="form-control" required>
                     </div>
-
                     <div class="form-group">
-                        <label for="country">Country *</label>
-                        <input type="text" id="country" required>
+                        <label for="landmark" class="form-label">Landmark (Optional)</label>
+                        <input type="text" id="landmark" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="address" class="form-label">Address *</label>
+                        <textarea id="address" class="form-control" required></textarea>
                     </div>
                 </form>
             </div>
@@ -90,18 +136,18 @@
                 <div id="card-details" style="display: none;">
                     <h4>Card Details</h4>
                     <div class="form-group">
-                        <label for="card-number">Card Number</label>
-                        <input type="text" id="card-number" placeholder="1234 5678 9012 3456">
+                        <label for="card-number" class="form-label">Card Number</label>
+                        <input type="text" id="card-number" class="form-control" placeholder="1234 5678 9012 3456">
                     </div>
                     <div class="form-group">
                         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
                             <div>
-                                <label for="expiry-month">Expiry Date</label>
-                                <input type="text" id="expiry-month" placeholder="MM/YY">
+                                <label for="expiry-month" class="form-label">Expiry Date</label>
+                                <input type="text" id="expiry-month" class="form-control" placeholder="MM/YY">
                             </div>
                             <div>
-                                <label for="cvv">CVV</label>
-                                <input type="text" id="cvv" placeholder="123">
+                                <label for="cvv" class="form-label">CVV</label>
+                                <input type="text" id="cvv" class="form-control" placeholder="123">
                             </div>
                         </div>
                     </div>
@@ -109,15 +155,15 @@
             </div>
 
             <div class="order-summary">
-                <h3>Order Summary</h3>
-                <div id="order-items">
-                    <!-- Order items will be loaded here -->
-                </div>
-                <div class="total">
-                    <p><strong>Total: Rs. <span id="order-total">0</span></strong></p>
-                </div>
-                <button type="submit" form="order-form">Place Order</button>
+
+
+
+
+
+                <p><strong>Total: Rs. <span id="order-total">0</span></strong></p>
             </div>
+            <button type="submit" form="order-form" class="btn btn-primary w-100">Place Order</button>
+        </div>
         </div>
     </section>
 
@@ -137,7 +183,8 @@
         <div class="col">
             <img class="logo" src="everylogo.png" width="200px">
             <h4>Contact</h4>
-            <p><strong>Address: </strong>Plot No. 2, Sector 17A, Yamuna Expressway, Opposite Buddha International Circuit, Greater Noida, Uttar Pradesh 203201</p>
+            <p><strong>Address: </strong>Plot No. 2, Sector 17A, Yamuna Expressway, Opposite Buddha International
+                Circuit, Greater Noida, Uttar Pradesh 203201</p>
             <p><strong>Phone: </strong>+1 956 1235 378</p>
             <p><strong>Hours: </strong> 10:00 - 18:00 Mon - Sat</p>
             <div class="follow">
@@ -153,9 +200,11 @@
         </div>
         <div class="col">
             <h4>About</h4>
-            <a href="#">Privacy Policy</a>
+            <a href="privacy.html">Privacy Policy</a>
             <a href="terms.html">Terms & Condition</a>
-            <a href="#">Contact Us</a>
+            <a href="contact.html">Contact Us</a>
+            <a href="refund.html">Cancellation & Refund Policy</a>
+            <a href="shipping.html">Shipping Policy</a>
         </div>
 
         <div class="col install">
@@ -176,4 +225,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>

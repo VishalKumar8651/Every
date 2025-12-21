@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - E-commerce</title>
+    <title>Shipping Policy - E-commerce</title>
     <link rel="icon" href="img/logo.ico" />
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"> -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        crossorigin="anonymous">
 </head>
 
 <body>
@@ -24,9 +24,6 @@
                 <li><a href="about.html">About</a></li>
                 <li><a href="contact.html">Contact</a></li>
                 <li id="lg-bag"><a href="cart.html"><i class="fa-solid fa-bag-shopping"></i></a></li>
-                <li><a href="signin.html" id="signin-btn">Sign In</a></li>
-                <li><a href="dashboard.html" id="profile-btn" style="display: none;"><i class="fa-solid fa-user"></i>
-                        Profile</a></li>
 
                 <a href='#' id='close'><i class='fa-solid fa-xmark'></i></a>
             </ul>
@@ -37,54 +34,73 @@
         </div>
     </section>
 
-    <section id="signin" class="section-p1">
+    <section id="page-header">
+        <h2>#Shipping Policy</h2>
+        <p>Fast and reliable delivery</p>
+    </section>
+
+    <section id="terms" class="section-p1">
         <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="signin-form">
-                        <h2 class="text-center mb-4">Sign In</h2>
-                        <form id="signin-form">
-                            <div class="mb-3">
-                                <label for="signin-username" class="form-label"><i
-                                        class="fas fa-envelope"></i>Email</label>
-                                <input type="email" class="form-control" id="signin-username"
-                                    placeholder="Enter your email" required>
-                                <div class="error-message" id="signin-username-error"></div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="signin-password" class="form-label"><i
-                                        class="fas fa-lock"></i>Password</label>
-                                <input type="password" class="form-control" id="signin-password"
-                                    placeholder="Enter your password" required>
-                                <div class="error-message" id="signin-password-error"></div>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Sign In</button>
-                        </form>
-                        <div class="text-center my-3">
-                            <span class="text-muted">OR</span>
-                        </div>
-                        <div id="g_id_onload"
-                            data-client_id="261980987680-k18fpdakoufn9lb9qjrbje2s7m8mk12m.apps.googleusercontent.com"
-                            data-callback="handleCredentialResponse">
-                        </div>
-                        <div class="d-flex justify-content-center">
-                            <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
-                                data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"
-                                data-width="350">
-                            </div>
-                        </div>
-                        <p class="text-center mt-3">Don't have an account? <a href="signup.html">Sign Up</a></p>
-                    </div>
+            <div class="terms-content">
+                <h2>Shipping and Delivery Policy</h2>
+                <p class="last-updated">Last updated: December 2024</p>
+
+                <div class="terms-section">
+                    <h3>1. Processing Time</h3>
+                    <p>All orders are processed within 1-2 business days. Orders are not shipped or delivered on
+                        weekends or holidays.</p>
+                    <p>If we are experiencing a high volume of orders, shipments may be delayed by a few days. Please
+                        allow additional days in transit for delivery.</p>
+                </div>
+
+                <div class="terms-section">
+                    <h3>2. Shipping Rates & Delivery Estimates</h3>
+                    <p>Shipping charges for your order will be calculated and displayed at checkout.</p>
+                    <ul>
+                        <li><strong>Standard Shipping:</strong> 5-7 business days - Free for orders over Rs. 500</li>
+                        <li><strong>Express Shipping:</strong> 2-3 business days - Rs. 100</li>
+                    </ul>
+                    <p>Delivery delays can occasionally occur.</p>
+                </div>
+
+                <div class="terms-section">
+                    <h3>3. Shipment Confirmation & Order Tracking</h3>
+                    <p>You will receive a Shipment Confirmation email once your order has shipped containing your
+                        tracking number(s). The tracking number will be active within 24 hours.</p>
+                </div>
+
+                <div class="terms-section">
+                    <h3>4. Customs, Duties and Taxes</h3>
+                    <p>We are not responsible for any customs and taxes applied to your order. All fees imposed during
+                        or after shipping are the responsibility of the customer (tariffs, taxes, etc.).</p>
+                </div>
+
+                <div class="terms-section">
+                    <h3>5. Damages</h3>
+                    <p>We are not liable for any products damaged or lost during shipping. If you received your order
+                        damaged, please contact the shipment carrier to file a claim.</p>
+                    <p>Please save all packaging materials and damaged goods before filing a claim.</p>
+                </div>
+
+                <div class="terms-section">
+                    <h3>6. International Shipping</h3>
+                    <p>We currently ship to addresses within India only. We do not ship internationally at this time.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Notification -->
-    <div id="notification" class="notification">
-        <i class="fa-solid fa-check-circle"></i>
-        <span>Signed in successfully!</span>
-    </div>
+    <section id="newsletter" class="section-p1 section-m1">
+        <div class="newstext">
+            <h4>Sign Up For Newsletters</h4>
+            <p>Get E-mail updates about our latest shop and <span>special offers</span></p>
+        </div>
+        <div class="form">
+            <input type="text" placeholder="Enter Your Email">
+            <button class="normal">Sign Up</button>
+        </div>
+    </section>
 
     <footer class="section-p1">
         <div class="col">
@@ -128,10 +144,9 @@
         <div class="copyright">
             <p>&copy; 2022, Tech etc - HTML CSS Ecommerce Template</p>
         </div>
+
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.2.1/redux.min.js"></script>
-    <script src="store.js"></script>
     <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
