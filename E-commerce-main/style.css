@@ -234,23 +234,30 @@ body {
 .product-section .pro {
     width: 100%;
     min-width: 250px;
-    padding: 10px 12px;
-    border: 1px solid #cce7d0;
-    border-radius: 25px;
+    padding: 15px;
+    border: 1px solid #f0f0f0;
+    border-radius: 20px;
     cursor: pointer;
-    box-shadow: 20px 20px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    /* Softer initial shadow */
     margin: 15px 0;
-    transition: 0.2s ease;
+    transition: all 0.3s ease;
+    /* Smoother transition */
     position: relative;
+    background: #fff;
 }
 
 .product-section .pro:hover {
-    box-shadow: 20px 20px 30px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+    /* Lift effect */
 }
 
 .product-section .pro img {
     width: 100%;
-    border-radius: 20px;
+    border-radius: 15px;
+    /* Matching inner radius */
+    margin-bottom: 10px;
 }
 
 .product-section .pro .des {
@@ -259,15 +266,17 @@ body {
 }
 
 .product-section .pro .des span {
-    color: #606063;
-    font-size: 12px;
+    color: #909090;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .product-section .pro .des h5 {
     padding-top: 7px;
     color: #1a1a1a;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
+    line-height: 1.4;
 }
 
 .product-section .pro .des i {
@@ -277,9 +286,20 @@ body {
 
 .product-section .pro .des h4 {
     padding-top: 7px;
-    font-size: 15px;
+    font-size: 18px;
+    /* Slightly larger price */
     font-weight: 700;
     color: #088178;
+}
+
+/* Fix for huge electronic images */
+.product-section.electronics .pro img,
+.product-section.electronics2 .pro img,
+.product-section.electronics3 .pro img {
+    height: 250px;
+    object-fit: contain;
+    background-color: #fff;
+    /* Ensure transparent images look good */
 }
 
 /* .product-section .pro .cart{
@@ -597,8 +617,77 @@ footer .copyright {
     justify-content: center;
 }
 
+/* Page Header - Shop */
+#page-header {
+    background-image: url("img/banner/b1.jpg");
+    /* Ensure this image exists or use color */
+    width: 100%;
+    height: 40vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    padding: 14px;
+    background-color: #e3e6f3;
+    /* Fallback */
+}
+
+#page-header h2,
+#page-header p {
+    color: #fff;
+    /* Assuming the image is dark, else toggle to dark text */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    /* Legibility */
+    z-index: 2;
+}
+
+#page-header h2 {
+    font-size: 56px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+#page-header p {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+/* Filter Buttons */
+.filter-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.filter-btn {
+    background: #f5f5f5;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.filter-btn:hover {
+    background: #088178;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.filter-btn.active {
+    background: #088178;
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(8, 129, 120, 0.3);
+}
+
 .modal-content {
-    background-color: #fff;
     margin: 5% auto;
     padding: 0;
     border-radius: 10px;
