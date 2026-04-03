@@ -561,7 +561,7 @@ footer .copyright {
 /* Notification */
 .notification {
     position: fixed;
-    top: 20px;
+    bottom: 20px;
     right: -300px;
     /* Start off-screen */
     background-color: #088178;
@@ -575,7 +575,7 @@ footer .copyright {
     font-size: 16px;
     font-weight: 500;
     z-index: 1000;
-    transition: right 0.5s ease-in-out;
+    transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .notification.show {

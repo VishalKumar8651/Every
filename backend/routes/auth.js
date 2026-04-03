@@ -6,9 +6,7 @@ const { protect } = require('../middleware/auth');
 const router = express.Router();
 
 const getSignedJwt = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE
-  });
+  return jwt.sign({ id }, process.env.JWT_SECRET);
 };
 
 router.post('/register', async (req, res) => {

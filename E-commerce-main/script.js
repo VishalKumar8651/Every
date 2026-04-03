@@ -127,17 +127,7 @@ async function addToCart(button) {
     }
 }
 
-function showNotification() {
-    const notification = document.getElementById('notification');
-    notification.classList.add('show');
-    notification.classList.remove('hide');
-
-    // Hide notification after 3 seconds
-    setTimeout(() => {
-        notification.classList.add('hide');
-        notification.classList.remove('show');
-    }, 3000);
-}
+// showNotification is defined later in the file with more features
 
 async function loadCartItems() {
     if (!isLoggedIn()) {
@@ -927,7 +917,7 @@ function showNotification(message = 'Product added to cart!', type = 'success') 
     setTimeout(() => {
         notification.classList.add('hide');
         notification.classList.remove('show');
-    }, 3000);
+    }, 2000);
 }
 
 function showError(elementId, message) {
