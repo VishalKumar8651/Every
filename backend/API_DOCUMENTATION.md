@@ -152,6 +152,30 @@ Authorization: Bearer <token>
 }
 ```
 
+### 5. Update Password
+**PUT** `/auth/update-password`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body:**
+```json
+{
+  "oldPassword": "currentPassword123",
+  "newPassword": "newSecretPassword456"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Password updated successfully"
+}
+```
+
 ---
 
 ## Product Endpoints

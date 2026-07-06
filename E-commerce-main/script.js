@@ -8,36 +8,59 @@ async function getAvailableAPI() {
         return backendAvailable ? LOCAL_API : LIVE_API;
     }
 
-    // If running from file system, assume local development
-    if (window.location.protocol === 'file:') {
-        console.log('Running from file system, defaulting to Local API');
-        backendAvailable = true;
-        return LOCAL_API;
-    }
+    console.log('Checking for local backend...');
 
     try {
+        // Set a 2-second timeout for the health check
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+
         const response = await fetch('http://localhost:5000/health', {
-            method: 'GET'
+            method: 'GET',
+            signal: controller.signal
         });
-        backendAvailable = response.ok;
-        console.log('Backend health check:', backendAvailable ? 'Online' : 'Offline');
-        return backendAvailable ? LOCAL_API : LIVE_API;
-    } catch (error) {
-        console.warn('Backend health check failed:', error);
-        // If we are on localhost, we probably want local API even if check fails (e.g. CORS)
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.log('On localhost, defaulting to Local API despite error');
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+            console.log('✅ Local backend detected (Online). Using Local API.');
             backendAvailable = true;
             return LOCAL_API;
+        } else {
+            throw new Error('Local backend returned non-OK status');
         }
+    } catch (error) {
+        console.warn('⚠️ Local backend not reachable (Offline). Switching to Live API.');
         backendAvailable = false;
         return LIVE_API;
     }
 }
 
 async function apiCall(endpoint, options = {}) {
-    API_URL = await getAvailableAPI();
-    return fetch(`${API_URL}${endpoint}`, options);
+    const currentApi = await getAvailableAPI();
+    const lastApi = localStorage.getItem('last_api_url');
+
+    // If we switched from Local to Live (or vice versa), the old token is invalid
+    if (lastApi && lastApi !== currentApi) {
+        console.log(`Backend changed from ${lastApi} to ${currentApi}. Resetting session...`);
+        localStorage.removeItem('token');
+    }
+    localStorage.setItem('last_api_url', currentApi);
+    API_URL = currentApi;
+
+    const response = await fetch(`${API_URL}${endpoint}`, options);
+
+    // Global handler for invalid/expired tokens
+    if (response.status === 401) {
+        console.warn('Unauthorized request. Clearing local session...');
+        localStorage.removeItem('token');
+        // Only redirect if we're not already trying to log in/register
+        if (!endpoint.includes('/auth/') && window.location.pathname !== '/signin.html') {
+            window.location.href = 'signin.html';
+        }
+    }
+
+    return response;
 }
 const bar = document.getElementById('bar');
 const close = document.getElementById('close');
@@ -95,9 +118,11 @@ async function addToCart(button) {
         const response = await apiCall(`/products?search=${encodeURIComponent(productName)}`);
         const data = await response.json();
 
-        if (data.success && data.products.length > 0) {
+        if (data.success && data.products && data.products.length > 0) {
             const product = data.products[0];
             const token = getToken();
+
+            console.log(`Adding product to cart: ${product.name} (ID: ${product._id})`);
 
             const cartResponse = await apiCall(`/cart/add`, {
                 method: 'POST',
@@ -113,17 +138,21 @@ async function addToCart(button) {
 
             const cartData = await cartResponse.json();
             if (cartData.success) {
-                store.dispatch(setCartAction(cartData.cart));
+                if (typeof store !== 'undefined') {
+                    store.dispatch(setCartAction(cartData.cart));
+                }
                 showNotification('Product added to cart!');
             } else {
-                showNotification('Error adding to cart', 'error');
+                console.error('Cart add failed:', cartData.message);
+                showNotification(cartData.message || 'Error adding to cart', 'error');
             }
         } else {
-            showNotification('Product not found', 'error');
+            console.warn(`Product search failed for: "${productName}" on ${API_URL}`);
+            showNotification('Product not found in database', 'error');
         }
     } catch (error) {
-        console.error('Error:', error);
-        showNotification('Error adding to cart', 'error');
+        console.error('Add to cart operation failed:', error);
+        showNotification('Error connecting to server', 'error');
     }
 }
 

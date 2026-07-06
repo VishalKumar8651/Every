@@ -183,20 +183,58 @@
                                     style="border: 2px solid #e1e5e9; border-radius: 10px; padding: 12px; background: #f8f9fa;">
                             </div>
                             <div class="mb-4">
-                                <label for="account-password" class="form-label"
-                                    style="color: #333; font-weight: 600; font-size: 16px;">Change Password</label>
-                                <input type="password" class="form-control" id="account-password"
+                                <label for="account-old-password" class="form-label"
+                                    style="color: #333; font-weight: 600; font-size: 16px;">Old Password</label>
+                                <input type="password" class="form-control" id="account-old-password"
+                                    placeholder="Enter old password"
+                                    style="border: 2px solid #e1e5e9; border-radius: 10px; padding: 12px; transition: border-color 0.3s ease;"
+                                    onfocus="this.style.borderColor='#667eea'"
+                                    onblur="this.style.borderColor='#e1e5e9'">
+                            </div>
+                            <div class="mb-4">
+                                <label for="account-new-password" class="form-label"
+                                    style="color: #333; font-weight: 600; font-size: 16px;">New Password</label>
+                                <input type="password" class="form-control" id="account-new-password"
                                     placeholder="Enter new password"
                                     style="border: 2px solid #e1e5e9; border-radius: 10px; padding: 12px; transition: border-color 0.3s ease;"
                                     onfocus="this.style.borderColor='#667eea'"
                                     onblur="this.style.borderColor='#e1e5e9'">
                             </div>
                             <button type="submit" class="btn"
-                                style="background: linear-gradient(135deg, #667eea, #764ba2); border: none; padding: 12px 30px; border-radius: 25px; color: white; font-weight: 600; font-size: 16px; transition: all 0.3s ease; width: 100%;"
+                                style="background: linear-gradient(135deg, #667eea, #764ba2); border: none; padding: 12px 30px; border-radius: 25px; color: white; font-weight: 600; font-size: 16px; transition: all 0.3s ease; width: 100%; margin-bottom: 20px;"
                                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.3)'"
                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Update
                                 Account</button>
                         </form>
+
+                        <div class="mt-5"
+                            style="background: rgba(255, 245, 245, 0.8); padding: 30px; border-radius: 15px; border: 1px solid #fee2e2;">
+                            <h4 style="color: #c53030; font-weight: 700; margin-bottom: 15px;">Danger Zone</h4>
+                            <p style="color: #718096; margin-bottom: 20px;">Once you delete your account, there is no
+                                going back. Please be certain.</p>
+
+                            <div id="delete-confirm-section" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="delete-password" class="form-label"
+                                        style="color: #333; font-weight: 600; font-size: 14px;">Confirm Password to
+                                        Delete</label>
+                                    <input type="password" class="form-control" id="delete-password"
+                                        placeholder="Enter your password"
+                                        style="border: 2px solid #feb2b2; border-radius: 10px; padding: 10px;">
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button onclick="confirmDeleteAccount()" class="btn btn-danger"
+                                        style="border-radius: 25px; padding: 10px 25px; font-weight: 600; flex: 1;">Verify
+                                        & Delete</button>
+                                    <button onclick="toggleDeleteSection(false)" class="btn btn-secondary"
+                                        style="border-radius: 25px; padding: 10px 25px; font-weight: 600;">Cancel</button>
+                                </div>
+                            </div>
+
+                            <button id="delete-btn" onclick="toggleDeleteSection(true)" class="btn btn-outline-danger"
+                                style="border-radius: 25px; padding: 12px 30px; font-weight: 600; width: 100%; transition: all 0.3s ease;">Delete
+                                My Account</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -343,13 +381,45 @@
             document.getElementById('account-form').addEventListener('submit', async function (e) {
                 e.preventDefault();
                 const name = document.getElementById('account-username').value;
-                const password = document.getElementById('account-password').value;
+                const oldPassword = document.getElementById('account-old-password').value;
+                const newPassword = document.getElementById('account-new-password').value;
 
-                if (password) {
-                    showNotification('Password change not implemented yet');
+                let nameUpdated = false;
+                let passwordUpdated = false;
+
+                // Handle password change first if both old and new passwords are provided
+                if (oldPassword && newPassword) {
+                    try {
+                        const response = await fetch(`${API_URL}/auth/update-password`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ oldPassword, newPassword })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            showNotification('Password updated successfully!');
+                            document.getElementById('account-old-password').value = '';
+                            document.getElementById('account-new-password').value = '';
+                            passwordUpdated = true;
+                        } else {
+                            showNotification(data.message || 'Failed to update password');
+                            return; // Stop if password update fails
+                        }
+                    } catch (error) {
+                        console.error('Error updating password:', error);
+                        showNotification('Error updating password');
+                        return;
+                    }
+                } else if (oldPassword || newPassword) {
+                    showNotification('Please provide both old and new passwords');
                     return;
                 }
 
+                // Handle name update
                 if (name !== user.name) {
                     try {
                         const response = await fetch(`${API_URL}/auth/update`, {
@@ -363,17 +433,20 @@
 
                         const data = await response.json();
                         if (data.success) {
-                            showNotification('Account updated successfully!');
                             document.getElementById('user-name').textContent = name;
                             user.name = name; // Update local user object
+                            nameUpdated = true;
+                            if (!passwordUpdated) {
+                                showNotification('Account name updated successfully!');
+                            }
                         } else {
-                            showNotification('Failed to update account');
+                            showNotification('Failed to update name');
                         }
                     } catch (error) {
-                        console.error('Error updating account:', error);
-                        showNotification('Error updating account');
+                        console.error('Error updating name:', error);
+                        showNotification('Error updating name');
                     }
-                } else {
+                } else if (!passwordUpdated) {
                     showNotification('No changes to update');
                 }
             });
@@ -390,13 +463,143 @@
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
             });
-            event.target.classList.add('active');
+            // Handle specific section loading
+            if (sectionName === 'orders') {
+                loadOrders();
+            }
+            // event.target.classList.add('active'); // Original code used event.target, but let's be more robust
+            const targetLink = document.querySelector(`a[onclick="showSection('${sectionName}')"]`);
+            if (targetLink) targetLink.classList.add('active');
+        }
+
+        async function loadOrders() {
+            const token = localStorage.getItem('token');
+            const API_URL = await getAvailableAPI();
+            const ordersList = document.getElementById('orders-list');
+
+            try {
+                const response = await fetch(`${API_URL}/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success && data.orders && data.orders.length > 0) {
+                    let ordersHtml = '';
+                    data.orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(order => {
+                        const date = new Date(order.createdAt).toLocaleString();
+                        const itemsHtml = order.items.map(item => `
+                            <div class="order-item" style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'" onclick="window.location.href='sproduct.html?id=${item.product._id}'">
+                                <img src="${item.product.image}" alt="${item.product.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 20px;">
+                                <div style="flex: 1;">
+                                    <h6 style="margin: 0; color: #333; font-weight: 600;">${item.productName}</h6>
+                                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Quantity: ${item.quantity}</p>
+                                    <p style="margin: 0; color: #088178; font-weight: 600;">Rs. ${item.price}</p>
+                                </div>
+                                <i class="fas fa-arrow-right" style="color: #667eea; font-size: 14px;"></i>
+                            </div>
+                        `).join('');
+
+                        ordersHtml += `
+                            <div class="order-card mb-4" style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;">
+                                <div class="order-header" style="background: #fdfdfd; padding: 20px; cursor: pointer; border-bottom: 1px solid #f1f1f1; display: flex; justify-content: space-between; align-items: center;" onclick="toggleItems('items-${order._id}')">
+                                    <div>
+                                        <h6 style="margin: 0; color: #333; font-weight: 700;">Order #${order._id.substring(order._id.length - 8).toUpperCase()}</h6>
+                                        <p style="margin: 5px 0 0; color: #718096; font-size: 13px;"><i class="far fa-calendar-alt me-1"></i> ${date}</p>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <p style="margin: 0; font-weight: 800; color: #667eea; font-size: 18px;">Rs. ${order.totalAmount}</p>
+                                        <span class="badge" style="background: #eef2ff; color: #667eea; border: 1px solid #e0e7ff; margin-top: 5px;">${order.orderStatus.toUpperCase()}</span>
+                                    </div>
+                                    <i class="fas fa-chevron-down ms-3" style="color: #cbd5e0; transition: transform 0.3s ease;"></i>
+                                </div>
+                                <div id="items-${order._id}" class="order-items-detail" style="display: none; padding: 0 20px 5px;">
+                                    ${itemsHtml}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    ordersList.innerHTML = ordersHtml;
+                    ordersList.style.textAlign = 'left';
+                    ordersList.style.background = 'transparent';
+                    ordersList.style.padding = '0';
+                    ordersList.style.boxShadow = 'none';
+                } else {
+                    ordersList.innerHTML = `
+                        <i class="fa-solid fa-shopping-bag" style="font-size: 64px; color: #667eea; margin-bottom: 20px;"></i>
+                        <p style="color: #666; font-size: 18px; font-weight: 500;">No orders yet. Start shopping!</p>
+                        <a href="shop.html" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Browse Shop</a>
+                    `;
+                    ordersList.style.textAlign = 'center';
+                }
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+                showNotification('Error loading order history');
+            }
+        }
+
+        function toggleItems(id) {
+            const el = document.getElementById(id);
+            const icon = el.previousElementSibling.querySelector('.fa-chevron-down');
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            } else {
+                el.style.display = 'none';
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
         }
 
         function signOut() {
             if (confirm('Are you sure you want to sign out?')) {
                 localStorage.removeItem('token');
                 window.location.href = 'index.html';
+            }
+        }
+
+        function toggleDeleteSection(show) {
+            document.getElementById('delete-confirm-section').style.display = show ? 'block' : 'none';
+            document.getElementById('delete-btn').style.display = show ? 'none' : 'block';
+        }
+
+        async function confirmDeleteAccount() {
+            const password = document.getElementById('delete-password').value;
+            const token = localStorage.getItem('token');
+
+            if (!password) {
+                showNotification('Please enter your password to confirm deletion');
+                return;
+            }
+
+            if (!confirm('FINAL WARNING: Are you absolutely sure you want to delete your account? This action is irreversible.')) {
+                return;
+            }
+
+            const API_URL = await getAvailableAPI();
+
+            try {
+                const response = await fetch(`${API_URL}/auth/delete-account`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('Account successfully deleted. Redirecting...');
+                    localStorage.removeItem('token');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    showNotification(data.message || 'Error: Could not delete account');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error connecting to the server');
             }
         }
     </script>

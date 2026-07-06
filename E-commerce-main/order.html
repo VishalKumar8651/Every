@@ -224,6 +224,105 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (!isLoggedIn()) {
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            const token = getToken();
+            const API_URL = await getAvailableAPI();
+            const orderTotalEl = document.getElementById('order-total');
+
+            // Fetch cart to show total
+            try {
+                const response = await fetch(`${API_URL}/cart`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success && data.cart) {
+                    orderTotalEl.textContent = data.cart.totalPrice;
+                    if (data.cart.items.length === 0) {
+                        alert('Your cart is empty!');
+                        window.location.href = 'shop.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching cart:', error);
+            }
+
+            // Handle payment method toggle
+            const paymentRadios = document.querySelectorAll('input[name="payment-method"]');
+            const cardDetails = document.getElementById('card-details');
+            
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.value === 'card') {
+                        cardDetails.style.display = 'block';
+                    } else {
+                        cardDetails.style.display = 'none';
+                    }
+                });
+            });
+
+            // Handle order form submission
+            const orderForm = document.getElementById('order-form');
+            orderForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const shippingAddress = {
+                    street: document.getElementById('address').value,
+                    city: document.getElementById('city').value,
+                    state: document.getElementById('state').value,
+                    postalCode: document.getElementById('pin-code').value,
+                    country: 'India' // Default for this shop
+                };
+
+                const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+
+                try {
+                    const response = await fetch(`${API_URL}/orders/create`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            shippingAddress,
+                            paymentMethod
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showNotification();
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html#orders';
+                        }, 2000);
+                    } else {
+                        alert(data.message || 'Error placing order');
+                    }
+                } catch (error) {
+                    console.error('Error placing order:', error);
+                    alert('Error connecting to the server');
+                }
+            });
+        });
+
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+            notification.classList.remove('hide');
+
+            // Hide notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('hide');
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
 </body>
 
 </html>

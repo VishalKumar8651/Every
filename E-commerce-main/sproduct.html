@@ -32,31 +32,31 @@
         </div>
     </section>
 
-    <!-- <section id="prodetails" class="section-p1">
+    <section id="prodetails" class="section-p1">
         <div class="single-pro-image">
             <img src="img/product/f1.jpg" width="100%" id="MainImg">
 
             <div class="small-img-group">
                 <div class="small-img-col">
-                    <img src="img/product/f1.jpg" width="100%" class="small-img">
+                    <img src="" width="100%" class="small-img">
                 </div>
                 <div class="small-img-col">
-                    <img src="img/product/f2.jpg" width="100%" class="small-img">
+                    <img src="" width="100%" class="small-img">
                 </div>
                 <div class="small-img-col">
-                    <img src="img/product/f3.jpg" width="100%" class="small-img">
+                    <img src="" width="100%" class="small-img">
                 </div>
                 <div class="small-img-col">
-                    <img src="img/product/f4.jpg" width="100%" class="small-img">
+                    <img src="" width="100%" class="small-img">
                 </div>
             </div>
         </div>
 
         <div class="single-pro-details">
-            <h6>Home / T-Shirt</h6>
-            <h4>Men's Fashion T Shirts</h4>
-            <h2>Rs. 400</h2>
-            <select>
+            <h6 id="pro-category">Home / T-Shirt</h6>
+            <h4 id="pro-name">Product Name</h4>
+            <h2 id="pro-price">Rs. 0</h2>
+            <select id="pro-size">
                 <option>Select Size</option>
                 <option>XXL</option>
                 <option>XL</option>
@@ -64,12 +64,12 @@
                 <option>Medium</option>
                 <option>Small</option>
             </select>
-            <input type="number" value="1">
-            <button class="normal">Add to Cart</button>
+            <input type="number" value="1" id="pro-quantity">
+            <button class="normal" id="pro-add-cart">Add to Cart</button>
             <h4>Product Details</h4>
-            <span>The Gliden Ultra Cotton T-Shirts is made from a substantial 6.0 oz. per sq. yd. ffabric constructed from 100% cotton, this clasic fit preshrunk jersey knit provides unmatched comfort with each wear. Featuring a tapped neck and shoulder, and a seamless double-needle collar, available in a range of colors, it offers it all the ultimate head-turning package. </span>
+            <span id="pro-description">Product description...</span>
         </div>
-    </section> -->
+    </section>
 
     <section id="product1" class="section-p1">
         <h2>Featured Products</h2>
@@ -418,20 +418,84 @@
     </footer>
 
     <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+
+            if (!productId) {
+                // Keep default values if no ID is found
+                return;
+            }
+
+            try {
+                const API_URL = await getAvailableAPI();
+                const response = await fetch(`${API_URL}/products/${productId}`);
+                const data = await response.json();
+
+                if (data.success && data.product) {
+                    const product = data.product;
+
+                    // Update page content
+                    document.getElementById('MainImg').src = product.image;
+                    document.getElementById('pro-name').textContent = product.name;
+                    document.getElementById('pro-price').textContent = `Rs. ${product.price}`;
+                    document.getElementById('pro-category').textContent = `Home / ${product.category}`;
+                    document.getElementById('pro-description').textContent = product.description;
+
+                    // Small images (using same image for placeholders)
+                    const smallImg = document.getElementsByClassName('small-img');
+                    for(let img of smallImg) {
+                        img.src = product.image;
+                    }
+
+                    // Add to cart listener
+                    document.getElementById('pro-add-cart').onclick = async function() {
+                        if (!isLoggedIn()) {
+                            showNotification('Please login first to add items to cart', 'error');
+                            setTimeout(() => {
+                                window.location.href = 'signin.html';
+                            }, 2000);
+                            return;
+                        }
+
+                        const quantity = document.getElementById('pro-quantity').value;
+                        const token = getToken();
+
+                        const cartResponse = await apiCall(`/cart/add`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                productId: product._id,
+                                quantity: parseInt(quantity)
+                            })
+                        });
+
+                        const cartData = await cartResponse.json();
+                        if (cartData.success) {
+                            showNotification('Product added to cart!');
+                        } else {
+                            showNotification(cartData.message || 'Error adding to cart', 'error');
+                        }
+                    };
+
+                } else {
+                    console.error('Product not found');
+                }
+            } catch (error) {
+                console.error('Error fetching product details:', error);
+            }
+        });
+
         var MainImg = document.getElementById("MainImg");
         var smallimg = document.getElementsByClassName("small-img");
 
-        smallimg[0].onclick = function () {
-            MainImg.src = smallimg[0].src;
-        }
-        smallimg[1].onclick = function () {
-            MainImg.src = smallimg[1].src;
-        }
-        smallimg[2].onclick = function () {
-            MainImg.src = smallimg[2].src;
-        }
-        smallimg[3].onclick = function () {
-            MainImg.src = smallimg[3].src;
+        for (let i = 0; i < smallimg.length; i++) {
+            smallimg[i].onclick = function () {
+                MainImg.src = smallimg[i].src;
+            }
         }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.2.1/redux.min.js"></script>
