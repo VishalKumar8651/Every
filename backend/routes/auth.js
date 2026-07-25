@@ -40,6 +40,22 @@ router.post('/register', async (req, res) => {
       password
     });
 
+    // Trigger n8n webhook for welcome email
+    try {
+      await fetch('https://vishalkr8651.app.n8n.cloud/webhook/new-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: user.name,
+          email: user.email,
+        }),
+      });
+    } catch (webhookError) {
+      console.error('Webhook Error:', webhookError);
+    }
+
     const token = getSignedJwt(user._id);
 
     res.status(201).json({
@@ -129,6 +145,22 @@ router.post('/google', async (req, res) => {
         picture,
         googleId
       });
+
+      // Trigger n8n webhook for welcome email
+      try {
+        await fetch('https://vishalkr8651.app.n8n.cloud/webhook/new-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: user.name,
+            email: user.email,
+          }),
+        });
+      } catch (webhookError) {
+        console.error('Webhook Error:', webhookError);
+      }
     }
 
     const token = getSignedJwt(user._id);
